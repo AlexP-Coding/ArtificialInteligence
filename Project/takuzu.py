@@ -128,6 +128,18 @@ class Board:
                 return True
         return False
 
+    def has_3_in_a_line(self):
+        for col in range(self.size):
+            for row in range(self.size):
+                adj_h = self.adjacent_horizontal_numbers(row, col)
+                if self.rows[row][col] == adj_h[0] == adj_h[1]:
+                    return True
+                adj_v = self.adjacent_vertical_numbers(col, row)
+                if self.columns[row][col] == adj_v[0] == adj_v[1]:
+                    return True
+        return False
+
+
     # TODO: outros metodos da classe
 
 
@@ -193,7 +205,7 @@ class Takuzu(Problem):
         estão preenchidas com uma sequência de números adjacentes."""
         if self.nrMissing != 0:
             return False  
-        elif self.board.has_duplicates():
+        elif self.board.has_duplicates() or self.board.has_3_in_a_line():
             return False
         else:
             return True
