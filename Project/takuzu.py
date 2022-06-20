@@ -39,11 +39,11 @@ class Board:
 
     def __init__(self, size: int):
         self.rows = []
-        self.columns = []
+        self.cols = []
         self.size = size
         for i in range(size):
             self.rows.append([])
-            self.columns.append([])
+            self.cols.append([])
         
     def get_number(self, row: int, col: int) -> int:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -89,7 +89,7 @@ class Board:
             list_row = [int(x) for x  in list_row]
             board.rows[row] = list_row
             for col in range (size):
-                board.columns[col].append(list_row[col])
+                board.cols[col].append(list_row[col])
         return board
 
     def to_string(self):
@@ -109,7 +109,7 @@ class Board:
         for i in range(self.size):
             for j in range(self.size):
                 stringRows += str(self.rows[i][j])
-                stringCols += str(self.columns[i][j])
+                stringCols += str(self.cols[i][j])
                 if j == self.size-1:
                     stringRows += '\n'
                     stringCols += '\n'
@@ -123,8 +123,8 @@ class Board:
         for row in self.rows:
             if self.rows.count(row) > 1:
                 return True
-        for col in self.columns:
-            if self.columns.count(col) > 1:
+        for col in self.cols:
+            if self.cols.count(col) > 1:
                 return True
         return False
 
@@ -135,10 +135,12 @@ class Board:
                 if self.rows[row][col] == adj_h[0] == adj_h[1]:
                     return True
                 adj_v = self.adjacent_vertical_numbers(col, row)
-                if self.columns[row][col] == adj_v[0] == adj_v[1]:
+                if self.cols[row][col] == adj_v[0] == adj_v[1]:
                     return True
         return False
 
+    def act(self, action):
+        """Aplica acao"""
 
     # TODO: outros metodos da classe
 
@@ -153,12 +155,12 @@ class Takuzu(Problem):
         self.rowStatus = {
             "Zeroes": [0] * self.board.size,
             "Ones": [0] * self.board.size,
-            "Nulls": [0] * self.board.size
+            "Missing": [0] * self.board.size
         }
         self.colStatus = {
             "Zeroes": [0] * self.board.size,
             "Ones": [0] * self.board.size,
-            "Nulls": [0] * self.board.size
+            "Missing": [0] * self.board.size
         }
 
         for row in range(self.board.size):
@@ -170,8 +172,8 @@ class Takuzu(Problem):
                     self.rowStatus["Ones"][row] += 1
                     self.colStatus["Ones"][col] += 1
                 else:
-                    self.rowStatus["Nulls"][row] += 1
-                    self.colStatus["Nulls"][col] += 1
+                    self.rowStatus["Missing"][row] += 1
+                    self.colStatus["Missing"][col] += 1
                     self.nrMissing += 1
                     self.nrFound -= 1
 
@@ -188,6 +190,13 @@ class Takuzu(Problem):
     def actions(self, state: TakuzuState):
         """Retorna uma rows de ações que podem ser executadas a
         partir do estado passado como argumento."""
+        """available = []
+
+       for row in range(self.board.size):
+            if num
+            for col in range(self.board.si)
+        """
+
         # TODO
         pass
 
@@ -196,8 +205,20 @@ class Takuzu(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na rows obtida pela execução de
         self.actions(state)."""
-        # TODO
-        pass
+        val = action[2]
+        state.board.rows[action[0]][action[1]] = val
+        state.board.cols[action[1]][action[0]] = val
+        state.nrFound +=1
+        state.nrMissing -= 1
+        if val == 0:
+            state.rowStatus["Zeroes"][action[0]] += 1
+            state.colStatus["Zeroes"][action[1]] += 1
+        elif val == 1:
+            state.rowStatus["Ones"][action[0]] += 1
+            state.colStatus["Ones"][action[1]] += 1
+        state.rowStatus["Missing"][action[1]] -= 1
+        state.colStatus["Missing"][action[1]] -= 1
+        return state
 
     def goal_test(self, state: TakuzuState):
         """Retorna True se e só se o estado passado como argumento é
