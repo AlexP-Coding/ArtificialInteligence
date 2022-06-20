@@ -37,8 +37,13 @@ class TakuzuState:
 class Board:
     """Representação interna de um tabuleiro de Takuzu."""
 
-    rows = [];
-    columns = [];
+    def __init__(self, size: int):
+        self.rows = []
+        self.columns = []
+        self.size = size
+        for i in range(size):
+            self.rows.append([])
+            self.columns.append([])
 
     def get_number(self, row: int, col: int) -> int:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -68,8 +73,42 @@ class Board:
             > from sys import stdin
             > stdin.readline()
         """
-        # TODO
-        pass
+        size = int(stdin.readline())
+        board = Board(size)
+        for row in range(size):
+            list_row = stdin.readline().rstrip('\n').split('\t')
+            list_row = [int(x) for x  in list_row]
+            board.rows[row] = list_row
+            for col in range (size):
+                board.columns[col].append(list_row[col])
+        return board
+
+    def to_string(self):
+        stringRows = ""
+        for i in range(self.size):
+            for j in range(self.size):
+                stringRows += str(self.rows[i][j])
+                if j == self.size-1:
+                    stringRows += '\n'
+                else:
+                    stringRows += '\t'
+        return stringRows
+
+    def to_string_aux(self):
+        stringRows = "Rows:\n"
+        stringCols = "Cols:\n"
+        for i in range(self.size):
+            for j in range(self.size):
+                stringRows += str(self.rows[i][j])
+                stringCols += str(self.columns[i][j])
+                if j == self.size-1:
+                    stringRows += '\n'
+                    stringCols += '\n'
+                else:
+                    stringRows += '\t'
+                    stringCols += '\t'
+        stringFinal = stringRows + '\n' + stringCols
+        return stringFinal
 
     # TODO: outros metodos da classe
 
@@ -110,12 +149,12 @@ class Takuzu(Problem):
 
 
 if __name__ == "__main__":
-
-    
+    board = Board.parse_instance_from_stdin()
+    print(board.to_string())
 
     # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    pass
+    
