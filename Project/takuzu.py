@@ -44,23 +44,32 @@ class Board:
         for i in range(size):
             self.rows.append([])
             self.columns.append([])
-
+        
     def get_number(self, row: int, col: int) -> int:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        # TODO
-        pass
+        return self.rows[row][col]
 
     def adjacent_vertical_numbers(self, row: int, col: int) -> (int, int):
         """Devolve os valores imediatamente abaixo e acima,
         respectivamente."""
-        # TODO
-        pass
+        up = None
+        down = None
+        if row < self.size-1:
+            down = self.rows[row+1][col]
+        if row > 0:
+            up = self.rows[row-1][col]
+        return (down, up)
 
     def adjacent_horizontal_numbers(self, row: int, col: int) -> (int, int):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        # TODO
-        pass
+        left = None
+        right = None
+        if row > 0:
+            left = self.rows[row][col-1]
+        if col < self.size-1:
+            right = self.rows[row][col+1]
+        return (left, right)
 
     @staticmethod
     def parse_instance_from_stdin():
@@ -115,12 +124,48 @@ class Board:
 
 class Takuzu(Problem):
     def __init__(self, board: Board):
-        """O construtor especifica o estado inicial."""
-        # TODO
-        pass
+        self.board = board
+        self.maxNrsPerLine = round(self.board.size/2) 
+        self.nrTotal = self.board.size**2
+        self.nrFound = self.nrTotal
+        self.nrMissing = 0
+        self.rowStatus = {
+            "Zeroes": [0] * self.board.size,
+            "Ones": [0] * self.board.size,
+            "Nulls": [0] * self.board.size
+        }
+        self.colStatus = {
+            "Zeroes": [0] * self.board.size,
+            "Ones": [0] * self.board.size,
+            "Nulls": [0] * self.board.size
+        }
+
+        for row in range(self.board.size):
+            for col in range(self.board.size):
+                if self.board.rows[row][col] == 0:
+                    self.rowStatus["Zeroes"][row] += 1
+                    self.colStatus["Zeroes"][col] += 1
+                elif self.board.rows[row][col] == 1:
+                    self.rowStatus["Ones"][row] += 1
+                    self.colStatus["Ones"][col] += 1
+                else:
+                    self.rowStatus["Nulls"][row] += 1
+                    self.colStatus["Nulls"][col] += 1
+                    self.nrMissing += 1
+                    self.nrFound -= 1
+
+    def to_string(self):
+        string = ""
+        string += 'Max # per line:' + '\n' + str(self.maxNrsPerLine) + '\n'
+        string += 'Nr Total:' + '\n' + str(self.nrTotal) + '\n'
+        string += 'Nr Found:' + '\n' + str(self.nrFound) + '\n'
+        string += 'Nr Missing:' + '\n' + str(self.nrMissing) + '\n'
+        string += 'Rows:' + '\n' + str(self.rowStatus) + '\n'
+        string += 'Cols:' + '\n' + str(self.colStatus)
+        return string
 
     def actions(self, state: TakuzuState):
-        """Retorna uma lista de ações que podem ser executadas a
+        """Retorna uma rows de ações que podem ser executadas a
         partir do estado passado como argumento."""
         # TODO
         pass
@@ -128,7 +173,7 @@ class Takuzu(Problem):
     def result(self, state: TakuzuState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
-        das presentes na lista obtida pela execução de
+        das presentes na rows obtida pela execução de
         self.actions(state)."""
         # TODO
         pass
@@ -151,6 +196,8 @@ class Takuzu(Problem):
 if __name__ == "__main__":
     board = Board.parse_instance_from_stdin()
     print(board.to_string())
+    takuzu = Takuzu(board)
+    print(takuzu.to_string())
 
     # TODO:
     # Ler o ficheiro do standard input,
