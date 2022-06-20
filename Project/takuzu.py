@@ -119,6 +119,15 @@ class Board:
         stringFinal = stringRows + '\n' + stringCols
         return stringFinal
 
+    def has_duplicates(self):
+        for row in self.rows:
+            if self.rows.count(row) > 1:
+                return True
+        for col in self.columns:
+            if self.columns.count(col) > 1:
+                return True
+        return False
+
     # TODO: outros metodos da classe
 
 
@@ -182,8 +191,14 @@ class Takuzu(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas com uma sequência de números adjacentes."""
+        if self.nrMissing != 0:
+            return False  
+        elif self.board.has_duplicates():
+            return False
+        else:
+            return True
+            
         # TODO
-        pass
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
