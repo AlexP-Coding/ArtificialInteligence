@@ -278,9 +278,7 @@ class Takuzu(Problem):
                                available.push(row, col, 1)
                            elif nr == 1:
                                available.push(row, col, 0)
-        if available.length == 0:
-            
-
+        """  if available.length == 0:"""
         # TODO
         return available
 
