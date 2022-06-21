@@ -38,12 +38,23 @@ class Board:
     """Representação interna de um tabuleiro de Takuzu."""
 
     def __init__(self, size: int):
-        self.rows = []
-        self.cols = []
+        self.rows = [[]] * size
+        self.cols = [[]] * size
         self.size = size
-        for i in range(size):
-            self.rows.append([])
-            self.cols.append([])
+        self.maxNrsPerLine = round(self.size/2) 
+        self.nrTotal = self.size**2
+        self.nrFound = self.nrTotal
+        self.nrMissing = 0
+        self.rowStatus = {
+            "Zeroes": [0] * self.size,
+            "Ones": [0] * self.size,
+            "Missing": [0] * self.size
+        }
+        self.colStatus = {
+            "Zeroes": [0] * self.size,
+            "Ones": [0] * self.size,
+            "Missing": [0] * self.size
+        }
         
     def get_number(self, row: int, col: int) -> int:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -77,7 +88,7 @@ class Board:
         e retorna uma instância da classe Board.
 
         Por exemplo:
-            $ python3 takuzu.py < input_T01
+            $ python3 takuzu.py < testes_takuzu/input_T01
 
             > from sys import stdin
             > stdin.readline()
@@ -90,6 +101,21 @@ class Board:
             board.rows[row] = list_row
             for col in range (size):
                 board.cols[col].append(list_row[col])
+        
+        for row in range(board.size):
+            for col in range(board.size):
+                if board.rows[row][col] == 0:
+                    board.rowStatus["Zeroes"][row] += 1
+                    board.colStatus["Zeroes"][col] += 1
+                elif board.rows[row][col] == 1:
+                    board.rowStatus["Ones"][row] += 1
+                    board.colStatus["Ones"][col] += 1
+                else:
+                    board.rowStatus["Missing"][row] += 1
+                    board.colStatus["Missing"][col] += 1
+                    board.nrMissing += 1
+                    board.nrFound -= 1
+
         return board
 
     def to_string(self):
@@ -118,6 +144,16 @@ class Board:
                     stringCols += '\t'
         stringFinal = stringRows + '\n' + stringCols
         return stringFinal
+
+    def to_string_status(self):
+        string = ""
+        string += 'Max # per line:' + '\n' + str(self.maxNrsPerLine) + '\n'
+        string += 'Nr Total:' + '\n' + str(self.nrTotal) + '\n'
+        string += 'Nr Found:' + '\n' + str(self.nrFound) + '\n'
+        string += 'Nr Missing:' + '\n' + str(self.nrMissing) + '\n'
+        string += 'Rows:' + '\n' + str(self.rowStatus) + '\n'
+        string += 'Cols:' + '\n' + str(self.colStatus)
+        return string
 
     def has_duplicates(self):
         for row in self.rows:
@@ -179,12 +215,7 @@ class Takuzu(Problem):
 
     def to_string(self):
         string = ""
-        string += 'Max # per line:' + '\n' + str(self.maxNrsPerLine) + '\n'
-        string += 'Nr Total:' + '\n' + str(self.nrTotal) + '\n'
-        string += 'Nr Found:' + '\n' + str(self.nrFound) + '\n'
-        string += 'Nr Missing:' + '\n' + str(self.nrMissing) + '\n'
-        string += 'Rows:' + '\n' + str(self.rowStatus) + '\n'
-        string += 'Cols:' + '\n' + str(self.colStatus)
+        string += self.board.to_string_status()
         return string
 
     def actions(self, state: TakuzuState):
