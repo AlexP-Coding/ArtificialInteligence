@@ -2,10 +2,11 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 27:
+# 91110 Inara Parbato 
+# 97375 Alexandra Pato
 
+from copy import deepcopy
 import sys
 from sys import stdin
 
@@ -175,8 +176,22 @@ class Board:
                     return True
         return False
 
-    def act(self, action):
+    def apply(self, action):
         """Aplica acao"""
+        val = action[2]
+        self.rows[action[0]][action[1]] = val
+        self.cols[action[1]][action[0]] = val
+        self.nrFound +=1
+        self.nrMissing -= 1
+        if val == 0:
+            self.rowStatus["Zeroes"][action[0]] += 1
+            self.colStatus["Zeroes"][action[1]] += 1
+        elif val == 1:
+            self.rowStatus["Ones"][action[0]] += 1
+            self.colStatus["Ones"][action[1]] += 1
+        self.rowStatus["Missing"][action[1]] -= 1
+        self.colStatus["Missing"][action[1]] -= 1
+        return 0
 
     # TODO: outros metodos da classe
 
@@ -221,36 +236,63 @@ class Takuzu(Problem):
     def actions(self, state: TakuzuState):
         """Retorna uma rows de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        """available = []
-
-       for row in range(self.board.size):
-            if num
-            for col in range(self.board.si)
-        """
+        available = []
+        for row in range(self.board.size):
+            if state.board.rowStatus["Missing"][row] != 0:
+                if state.board.rowStatus["Zeroes"][row] == state.board.maxNrsPerLine:
+                    for col in range(state.board.size):
+                        if state.board.get_number(row, col) == 2:
+                            available.push((row, col, 1))
+                elif state.board.rowStatus["Ones"][row] == state.board.maxNrsPerLine:
+                    for col in range(state.board.size):
+                        if state.board.get_number(row, col) == 2:
+                            available.push((row, col, 0))
+        if available.length == 0:
+            """ Only apply if actions is empty, so as to not transverse whole table unnecessarily """
+            for col in range(self.board.size):
+                if state.board.colStatus["Missing"][col] != 0:
+                    if state.board.colStatus["Zeroes"][col] == state.board.maxNrsPerLine:
+                        for row in range(state.board.size):
+                            if state.board.get_number(row, col) == 2:
+                                available.push((row, col, 1))
+                    elif state.board.colStatus["Ones"][col] == state.board.maxNrsPerLine:
+                        for col in range(state.board.size):
+                            if state.board.get_number(row, col) == 2:
+                                available.push((row, col, 0))
+        if available.length == 0:
+            """ If actions is still empty"""
+            for row in range(self.board.size):
+                for col in range(self.board.size):
+                    if self.board.get_number(row, col) != 2:
+                       adj = self.board.adjacent_horizontal_numbers(row, col)
+                       nr = adj[0]
+                       if nr == adj[1]:
+                           if nr == 0:
+                               available.push(row, col, 1)
+                           elif nr == 1:
+                               available.push(row, col, 0)
+                       adj = self.board.adjacent_vertical_numbers(row, col)
+                       nr = adj[0]
+                       if nr == adj[1]:
+                           if nr == 0:
+                               available.push(row, col, 1)
+                           elif nr == 1:
+                               available.push(row, col, 0)
+        if available.length == 0:
+            
 
         # TODO
-        pass
+        return available
 
     def result(self, state: TakuzuState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na rows obtida pela execução de
         self.actions(state)."""
-        val = action[2]
-        state.board.rows[action[0]][action[1]] = val
-        state.board.cols[action[1]][action[0]] = val
-        state.nrFound +=1
-        state.nrMissing -= 1
-        if val == 0:
-            state.rowStatus["Zeroes"][action[0]] += 1
-            state.colStatus["Zeroes"][action[1]] += 1
-        elif val == 1:
-            state.rowStatus["Ones"][action[0]] += 1
-            state.colStatus["Ones"][action[1]] += 1
-        state.rowStatus["Missing"][action[1]] -= 1
-        state.colStatus["Missing"][action[1]] -= 1
-        return state
-
+        res: TakuzuState = deepcopy(state)
+        res.board.apply(action)
+        return res
+    
     def goal_test(self, state: TakuzuState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
