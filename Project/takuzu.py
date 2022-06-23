@@ -89,7 +89,7 @@ class Board:
         e retorna uma instância da classe Board.
 
         Por exemplo:
-            $ python3 takuzu.py < testes_takuzu/input_T01
+            $ python3 takuzu.py < testes-takuzu/input_T01
 
             > from sys import stdin
             > stdin.readline()
@@ -112,6 +112,8 @@ class Board:
                     board.rowStatus["Ones"][row] += 1
                     board.colStatus["Ones"][col] += 1
                 else:
+                    board.rows[row][col] = None
+                    board.cols[col][row] = None 
                     board.rowStatus["Missing"][row] += 1
                     board.colStatus["Missing"][col] += 1
                     board.nrMissing += 1
@@ -123,7 +125,12 @@ class Board:
         stringRows = ""
         for i in range(self.size):
             for j in range(self.size):
-                stringRows += str(self.rows[i][j])
+                nr = self.get_number(i, j)
+                if nr != None:
+                    stringRows += str(nr)
+                else:
+                    stringRows += str(2)
+
                 if j == self.size-1:
                     stringRows += '\n'
                 else:
@@ -157,12 +164,11 @@ class Board:
         return string
 
     def has_duplicates(self):
-        for row in self.rows:
-            if self.rows.count(row) > 1:
-                return True
-        for col in self.cols:
-            if self.cols.count(col) > 1:
-                return True
+        for index1 in range(self.size):
+            for index2 in range(index1):
+                if self.rows[index1] == self.rows[index2] \
+                or self.cols[index1] == self.cols[index2]:
+                    return True
         return False
 
     def has_3_in_a_line(self):
@@ -172,8 +178,17 @@ class Board:
                 if self.rows[row][col] == adj_h[0] == adj_h[1]:
                     return True
                 adj_v = self.adjacent_vertical_numbers(col, row)
-                if self.cols[row][col] == adj_v[0] == adj_v[1]:
+                if self.cols[col][row] == adj_v[0] == adj_v[1]:
                     return True
+        return False
+
+    def has_nr_overflow(self):
+        for index in range(self.size):
+            if self.rowStatus["Zeroes"][index] > self.maxNrsPerLine \
+                or self.colStatus["Zeroes"][index] > self.maxNrsPerLine \
+                or self.rowStatus["Ones"][index] > self.maxNrsPerLine \
+                or self.colStatus["Ones"][index] > self.maxNrsPerLine:
+                return True
         return False
 
     def apply(self, action):
@@ -237,15 +252,16 @@ class Takuzu(Problem):
         """Retorna uma rows de ações que podem ser executadas a
         partir do estado passado como argumento."""
         available = []
+        filed = {}
         for row in range(self.board.size):
             if state.board.rowStatus["Missing"][row] != 0:
                 if state.board.rowStatus["Zeroes"][row] == state.board.maxNrsPerLine:
                     for col in range(state.board.size):
-                        if state.board.get_number(row, col) == 2:
+                        if state.board.get_number(row, col) == None:
                             available.push((row, col, 1))
                 elif state.board.rowStatus["Ones"][row] == state.board.maxNrsPerLine:
                     for col in range(state.board.size):
-                        if state.board.get_number(row, col) == 2:
+                        if state.board.get_number(row, col) == None:
                             available.push((row, col, 0))
         if available.length == 0:
             """ Only apply if actions is empty, so as to not transverse whole table unnecessarily """
@@ -253,17 +269,17 @@ class Takuzu(Problem):
                 if state.board.colStatus["Missing"][col] != 0:
                     if state.board.colStatus["Zeroes"][col] == state.board.maxNrsPerLine:
                         for row in range(state.board.size):
-                            if state.board.get_number(row, col) == 2:
+                            if state.board.get_number(row, col) == None:
                                 available.push((row, col, 1))
                     elif state.board.colStatus["Ones"][col] == state.board.maxNrsPerLine:
                         for col in range(state.board.size):
-                            if state.board.get_number(row, col) == 2:
+                            if state.board.get_number(row, col) == None:
                                 available.push((row, col, 0))
         if available.length == 0:
             """ If actions is still empty"""
             for row in range(self.board.size):
                 for col in range(self.board.size):
-                    if self.board.get_number(row, col) != 2:
+                    if self.board.get_number(row, col) != None:
                        adj = self.board.adjacent_horizontal_numbers(row, col)
                        nr = adj[0]
                        if nr == adj[1]:
@@ -297,6 +313,8 @@ class Takuzu(Problem):
         estão preenchidas com uma sequência de números adjacentes."""
         if self.nrMissing != 0:
             return False  
+        elif board.has_nr_overflow():
+            return False
         elif self.board.has_duplicates() or self.board.has_3_in_a_line():
             return False
         else:
