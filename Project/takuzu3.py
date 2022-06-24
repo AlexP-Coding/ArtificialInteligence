@@ -7,7 +7,7 @@
 # 91110 Inara Parbato 
 # 97375 Alexandra Pato
 
-# python3 takuzu2.py < testes-takuzu/input_T01
+# python3 takuzu3.py < testes-takuzu/input_T01
 
 from copy import deepcopy
 from hashlib import new
@@ -186,7 +186,7 @@ class Board:
 
     def has_duplicates(self):
         for index1 in range(self.size):
-            for index2 in range(index1):
+            for index2 in range(index1+1, self.size):
                 if self.rows[index1] == self.rows[index2] \
                 or self.cols[index1] == self.cols[index2]:
                     return True
@@ -198,7 +198,7 @@ class Board:
                 adj_h = self.adjacent_horizontal_numbers(row, col)
                 if self.rows[row][col] == adj_h[0] == adj_h[1]:
                     return True
-                adj_v = self.adjacent_vertical_numbers(col, row)
+                adj_v = self.adjacent_vertical_numbers(row, col)
                 if self.cols[col][row] == adj_v[0] == adj_v[1]:
                     return True
         return False
@@ -331,10 +331,10 @@ class Takuzu(Problem):
             return False  
         elif state.board.has_nr_overflow():
             return False
-#        elif state.board.has_duplicates():
-#            return False
-#        elif state.board.has_3_in_a_line():
-#            return False
+        elif state.board.has_duplicates():
+            return False
+        elif state.board.has_3_in_a_line():
+            return False
         else:
             return True
             
