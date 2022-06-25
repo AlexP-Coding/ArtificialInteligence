@@ -46,7 +46,7 @@ class Board:
         self.rows = [[]] * size
         self.cols = [[]] * size
         self.size = size
-        self.maxNrsPerLine = round(self.size/2) 
+        self.maxNrsPerLine = self.size//2 + self.size%2
         self.nrTotal = self.size**2
         self.nrFound = self.nrTotal
         self.nrMissing = 0
@@ -121,11 +121,11 @@ class Board:
             list_row = stdin.readline().rstrip('\n').split('\t')
             list_row = [int(x) for x  in list_row]
             board.rows[row] = list_row
-            for col in range (size):
-                board.cols[col].append(list_row[col])
+            board.cols[row] = list_row
         
         for row in range(board.size):
             for col in range(board.size):
+                board.cols[col][row] = board.rows[row][col]
                 if board.rows[row][col] == 0:
                     board.rowStatus["Zeroes"][row] += 1
                     board.colStatus["Zeroes"][col] += 1
@@ -139,7 +139,7 @@ class Board:
                     board.colStatus["Missing"][col] += 1
                     board.nrMissing += 1
                     board.nrFound -= 1
-
+       # print(board.to_string_aux())
         return board
 
     def to_string(self):
@@ -190,17 +190,20 @@ class Board:
                 if index1 != index2 and \
                 (self.rows[index1] == self.rows[index2] \
                 or self.cols[index1] == self.cols[index2]):
+           #         print("I'M A DUPLICATE BITCH!!!!!!!!!!!!!!!")
+           #         print(self.to_string_aux())
                     return True
         return False
 
     def has_3_in_a_line(self):
-        for col in range(self.size):
-            for row in range(self.size):
+        for row in range(self.size):
+            for col in range(self.size):
+                current = self.get_number(row, col)
                 adj_h = self.adjacent_horizontal_numbers(row, col)
-                if self.rows[row][col] == adj_h[0] == adj_h[1]:
+                if current == adj_h[0] == adj_h[1] != None:
                     return True
                 adj_v = self.adjacent_vertical_numbers(row, col)
-                if self.cols[col][row] == adj_v[0] == adj_v[1]:
+                if current == adj_v[0] == adj_v[1] != None:
                     return True
         return False
 
@@ -281,19 +284,19 @@ class Takuzu(Problem):
                 adj = state.board.adjacent_horizontal_numbers(row, col)
                 left = adj[0]
                 right = adj[1]
-                if col < state.board.size-1 and left == middle != None and right == None: # fill right
-                    if middle == 0:
-                        available.append((row, col+1, 1))
-                    elif middle == 1:
-                        available.append((row, col+1, 0))
-                    filled[(row, col)] = True
                 if col > 0 and middle == right != None and left == None: # fill left
                     if middle == 0:
                         available.append((row, col-1, 1))
                     elif middle == 1:
                         available.append((row, col-1, 0))
                     filled[(row, col)] = True
-                if left == right != None and middle == None: # fill middle/current
+                elif col < state.board.size-1 and left == middle != None and right == None: # fill right
+                    if middle == 0:
+                        available.append((row, col+1, 1))
+                    elif middle == 1:
+                        available.append((row, col+1, 0))
+                    filled[(row, col)] = True
+                elif left == right != None and middle == None: # fill middle/current
                     if left == 0:
                         available.append((row, col, 1))
                     elif left == 1:
@@ -309,13 +312,13 @@ class Takuzu(Problem):
                     elif middle == 1:
                         available.append((row+1, col, 0))
                     filled[(row, col)] = True
-                if row > 0 and middle == down != None and up == None: # fill up
+                elif row > 0 and middle == down != None and up == None: # fill up
                     if middle == 0:
                         available.append((row-1, col, 1))
                     elif middle == 1:
                         available.append((row-1, col, 0))
                     filled[(row, col)] = True
-                if up == down != None and middle == None: # fill middle/current
+                elif up == down != None and middle == None: # fill middle/current
                     if up == 0:
                         available.append((row, col, 1))
                     elif up == 1:
@@ -323,17 +326,18 @@ class Takuzu(Problem):
                     filled[(row, col)] = True
 
         true_available = list(set(available))
-        if len(available) == 0:
+        if len(true_available) == 0:
             for row in range(state.board.size):
                 for col in range(state.board.size):
                     if (row, col) not in filled and state.board.get_number(row, col) == None:
-                        available.append((row, col, 0))
-                        available.append((row, col, 1))
+                        true_available.append((row, col, 0))
+                        true_available.append((row, col, 1))
                         filled[(row, col)] = True
-        print(str(state.board.to_string()))
+    #    print(str(state.board.to_string()))
+        print(board.to_string_aux())
         print(str(state.board.to_string_status()))
-        print("Available: " + str(available))
-        return available
+        print("Available: " + str(true_available))
+        return true_available
 
 #   0*	1*	0	1
 #   1	0	0*	1
@@ -357,10 +361,10 @@ class Takuzu(Problem):
         estão preenchidas com uma sequência de números adjacentes."""
         if state.board.nrMissing > 0:
             return False  
-        elif state.board.has_nr_overflow():
-            return False
-#        elif state.board.has_duplicates():
-#            return False
+ #       elif state.board.has_nr_overflow():
+ #           return False
+ #       elif state.board.has_duplicates():
+ #           return False
         elif state.board.has_3_in_a_line():
             return False
         else:
