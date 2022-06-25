@@ -158,7 +158,7 @@ class Board:
                 else:
                     stringRows += str(nr)
 
-                if j == self.size-1:
+                if j == self.size-1 and i < self.size-1:
                     stringRows += '\n'
                 else:
                     stringRows += '\t'
@@ -192,10 +192,9 @@ class Board:
 
     def has_duplicates(self):
         for index1 in range(self.size):
-            for index2 in range(self.size):
-                if index1 != index2 and \
-                (self.rows[index1] == self.rows[index2] \
-                or self.cols[index1] == self.cols[index2]):
+            for index2 in range(index1+1, self.size):
+                if self.rows[index1] == self.rows[index2] \
+                or self.cols[index1] == self.cols[index2]:
            #         print("I'M A DUPLICATE BITCH!!!!!!!!!!!!!!!")
            #         print(self.to_string_aux())
                     return True
@@ -367,10 +366,10 @@ class Takuzu(Problem):
         estão preenchidas com uma sequência de números adjacentes."""
         if state.board.nrMissing > 0:
             return False  
- #       elif state.board.has_nr_overflow():
- #           return False
- #       elif state.board.has_duplicates():
- #           return False
+        elif state.board.has_nr_overflow():
+            return False
+        elif state.board.has_duplicates():
+            return False
         elif state.board.has_3_in_a_line():
             return False
         else:
