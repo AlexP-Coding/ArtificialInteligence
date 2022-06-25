@@ -13,6 +13,7 @@ from copy import deepcopy
 from hashlib import new
 import sys
 from sys import stdin
+from wsgiref.validate import validator
 
 from search import (
     Problem,
@@ -118,39 +119,44 @@ class Board:
         size = int(stdin.readline())
         board = Board(size)
         for row in range(size):
-            list_row = stdin.readline().rstrip('\n').split('\t')
+            list_row = stdin.readline().split('\t')
             list_row = [int(x) for x  in list_row]
             board.rows[row] = list_row
-            board.cols[row] = list_row
+            board.cols[row] = list_row.copy()
         
         for row in range(board.size):
             for col in range(board.size):
-                board.cols[col][row] = board.rows[row][col]
-                if board.rows[row][col] == 0:
-                    board.rowStatus["Zeroes"][row] += 1
-                    board.colStatus["Zeroes"][col] += 1
-                elif board.rows[row][col] == 1:
-                    board.rowStatus["Ones"][row] += 1
-                    board.colStatus["Ones"][col] += 1
-                else:
+                val = int(board.get_number(row, col))
+                if val == 2:
                     board.rows[row][col] = None
-                    board.cols[col][row] = None 
                     board.rowStatus["Missing"][row] += 1
                     board.colStatus["Missing"][col] += 1
                     board.nrMissing += 1
                     board.nrFound -= 1
-       # print(board.to_string_aux())
+                elif val == 1:
+                    board.rowStatus["Ones"][row] += 1
+                    board.colStatus["Ones"][col] += 1
+                elif val == 0:
+                    board.rowStatus["Zeroes"][row] += 1
+                    board.colStatus["Zeroes"][col] += 1
+                board.cols[col][row] = board.rows[row][col]
         return board
+
+    def to_string2(self):
+        stringRows = ""
+        for i in range(self.size):
+            stringRows += str(self.rows[i]) + '\n'
+        return stringRows
 
     def to_string(self):
         stringRows = ""
         for i in range(self.size):
             for j in range(self.size):
                 nr = self.get_number(i, j)
-                if nr != None:
-                    stringRows += str(nr)
+                if nr == None:
+                    stringRows += '2'
                 else:
-                    stringRows += str(2)
+                    stringRows += str(nr)
 
                 if j == self.size-1:
                     stringRows += '\n'
@@ -334,9 +340,9 @@ class Takuzu(Problem):
                         true_available.append((row, col, 1))
                         filled[(row, col)] = True
     #    print(str(state.board.to_string()))
-        print(board.to_string_aux())
-        print(str(state.board.to_string_status()))
-        print("Available: " + str(true_available))
+    #    print(board.to_string_aux())
+     #   print(str(state.board.to_string_status()))
+      #  print("Available: " + str(true_available))
         return true_available
 
 #   0*	1*	0	1
@@ -382,7 +388,7 @@ class Takuzu(Problem):
 
 if __name__ == "__main__":
     board = Board.parse_instance_from_stdin()
-    print(board.to_string())
+ #   print(board.to_string())
     takuzu = Takuzu(board)
     goal_node = depth_first_tree_search(takuzu)
     print(goal_node.state.board.to_string())
