@@ -160,7 +160,7 @@ class Board:
 
                 if j == self.size-1 and i < self.size-1:
                     stringRows += '\n'
-                else:
+                elif j != self.size-1:
                     stringRows += '\t'
         return stringRows
 
