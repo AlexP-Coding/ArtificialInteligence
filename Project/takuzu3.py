@@ -255,6 +255,7 @@ class Takuzu(Problem):
         partir do estado passado como argumento."""
         available = []
         filled = {}
+        nrAvailable = 0
         for row in range(state.board.size):
             if state.board.rowStatus["Missing"][row] != 0:
                 if state.board.rowStatus["Zeroes"][row] == state.board.maxNrsPerLine:
@@ -262,76 +263,105 @@ class Takuzu(Problem):
                         if state.board.get_number(row, col) == None:
                             available.append((row, col, 1))
                             filled[(row, col)] = True
+                            nrAvailable +=1
+                            break
+                    if nrAvailable > 0:
+                        break
                 if state.board.rowStatus["Ones"][row] == state.board.maxNrsPerLine:
                     for col in range(state.board.size):
                         if state.board.get_number(row, col) == None:
                             available.append((row, col, 0))
                             filled[(row, col)] = True
-                        
-        """ Only apply if actions is empty, so as to not transverse whole table unnecessarily """
-        for col in range(state.board.size):
-            if state.board.colStatus["Missing"][col] != 0:
-                if state.board.colStatus["Zeroes"][col] == state.board.maxNrsPerLine:
-                    for row in range(state.board.size):
-                        if state.board.get_number(row, col) == None:
-                            available.append((row, col, 1))
-                            filled[(row, col)] = True
-                if state.board.colStatus["Ones"][col] == state.board.maxNrsPerLine:
-                    for row in range(state.board.size):
-                        if state.board.get_number(row, col) == None:
-                            available.append((row, col, 0))
-                            filled[(row, col)] = True
-
-        """ If actions is still empty"""
-        for row in range(state.board.size):
+                            nrAvailable +=1
+                            break
+                    if nrAvailable > 0:
+                        break
+        if nrAvailable == 0:                
+            """ Only apply if actions is empty, so as to not transverse whole table unnecessarily """
             for col in range(state.board.size):
-                middle = state.board.get_number(row, col)
-                adj = state.board.adjacent_horizontal_numbers(row, col)
-                left = adj[0]
-                right = adj[1]
-                if col > 0 and middle == right != None and left == None: # fill left
-                    if middle == 0:
-                        available.append((row, col-1, 1))
-                    elif middle == 1:
-                        available.append((row, col-1, 0))
-                    filled[(row, col)] = True
-                elif col < state.board.size-1 and left == middle != None and right == None: # fill right
-                    if middle == 0:
-                        available.append((row, col+1, 1))
-                    elif middle == 1:
-                        available.append((row, col+1, 0))
-                    filled[(row, col)] = True
-                elif left == right != None and middle == None: # fill middle/current
-                    if left == 0:
-                        available.append((row, col, 1))
-                    elif left == 1:
-                        available.append((row, col, 0))
-                    filled[(row, col)] = True
+                if state.board.colStatus["Missing"][col] != 0:
+                    if state.board.colStatus["Zeroes"][col] == state.board.maxNrsPerLine:
+                        for row in range(state.board.size):
+                            if state.board.get_number(row, col) == None:
+                                available.append((row, col, 1))
+                                filled[(row, col)] = True
+                                nrAvailable +=1
+                                break
+                        if nrAvailable > 0:
+                            break
+                    if state.board.colStatus["Ones"][col] == state.board.maxNrsPerLine:
+                        for row in range(state.board.size):
+                            if state.board.get_number(row, col) == None:
+                                available.append((row, col, 0))
+                                filled[(row, col)] = True
+                                nrAvailable +=1
+                                break
+                        if nrAvailable > 0:
+                            break
 
-                adj = state.board.adjacent_vertical_numbers(row, col)
-                down = adj[0]
-                up = adj[1]
-                if row < state.board.size-1 and up == middle != None and down == None: # fill down
-                    if middle == 0:
-                        available.append((row+1, col, 1))
-                    elif middle == 1:
-                        available.append((row+1, col, 0))
-                    filled[(row, col)] = True
-                elif row > 0 and middle == down != None and up == None: # fill up
-                    if middle == 0:
-                        available.append((row-1, col, 1))
-                    elif middle == 1:
-                        available.append((row-1, col, 0))
-                    filled[(row, col)] = True
-                elif up == down != None and middle == None: # fill middle/current
-                    if up == 0:
-                        available.append((row, col, 1))
-                    elif up == 1:
-                        available.append((row, col, 0))
-                    filled[(row, col)] = True
-
+        if nrAvailable == 0:
+            """ If actions is still empty"""
+            for row in range(state.board.size):
+                for col in range(state.board.size):
+                    middle = state.board.get_number(row, col)
+                    adj = state.board.adjacent_horizontal_numbers(row, col)
+                    left = adj[0]
+                    right = adj[1]
+                    if col > 0 and middle == right != None and left == None: # fill left
+                        if middle == 0:
+                            available.append((row, col-1, 1))
+                        elif middle == 1:
+                            available.append((row, col-1, 0))
+                        filled[(row, col)] = True
+                        nrAvailable += 1
+                        break
+                    elif col < state.board.size-1 and left == middle != None and right == None: # fill right
+                        if middle == 0:
+                            available.append((row, col+1, 1))
+                        elif middle == 1:
+                            available.append((row, col+1, 0))
+                        filled[(row, col)] = True
+                        nrAvailable += 1
+                        break
+                    elif left == right != None and middle == None: # fill middle/current
+                        if left == 0:
+                            available.append((row, col, 1))
+                        elif left == 1:
+                            available.append((row, col, 0))
+                        filled[(row, col)] = True
+                        nrAvailable += 1
+                        break
+                    adj = state.board.adjacent_vertical_numbers(row, col)
+                    down = adj[0]
+                    up = adj[1]
+                    if row < state.board.size-1 and up == middle != None and down == None: # fill down
+                        if middle == 0:
+                            available.append((row+1, col, 1))
+                        elif middle == 1:
+                            available.append((row+1, col, 0))
+                        filled[(row, col)] = True
+                        nrAvailable += 1
+                        break
+                    elif row > 0 and middle == down != None and up == None: # fill up
+                        if middle == 0:
+                            available.append((row-1, col, 1))
+                        elif middle == 1:
+                            available.append((row-1, col, 0))
+                        filled[(row, col)] = True
+                        nrAvailable += 1
+                        break
+                    elif up == down != None and middle == None: # fill middle/current
+                        if up == 0:
+                            available.append((row, col, 1))
+                        elif up == 1:
+                            available.append((row, col, 0))
+                        filled[(row, col)] = True
+                        nrAvailable += 1
+                        break
+                if nrAvailable > 0:
+                    break
         true_available = list(set(available))
-        if len(true_available) == 0:
+        if nrAvailable == 0:
             for row in range(state.board.size):
                 for col in range(state.board.size):
                     if (row, col) not in filled and state.board.get_number(row, col) == None:
