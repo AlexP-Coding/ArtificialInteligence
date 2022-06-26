@@ -403,7 +403,7 @@ if __name__ == "__main__":
     board = Board.parse_instance_from_stdin()
  #   print(board.to_string())
     takuzu = Takuzu(board)
-    print(compare_searchers([takuzu], 'nada'))
+    print(compare_searchers([takuzu], ""))
 
     # TODO:
     # Ler o ficheiro do standard input,
