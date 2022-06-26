@@ -79,3 +79,33 @@ breadth_first_tree_search   < 180/ 181/ 180/<__m>
 depth_first_tree_search     < 180/ 181/ 180/<__m>
 greedy_search               < 180/ 181/ 180/<__m>
 astar_search                < 180/ 181/ 180/<__m>
+
+
+Completude (acha sempre solução):
+- bfs: sim
+- dfs: sim, profundidade não é infinita nem tem ciclos/estados repetidos
+- greedy: sim neste caso em particular (em cada iteração apenas uma posição é atualizada, e sempre pela mesma ordem)
+- a*: sim (nos n sao infinitos, em cada iteração apenas uma posição é atualizada, e sempre pela mesma ordem)
+
+Complexidade temporal (nr nós gerados):
+- bfs: O(b^d)
+- dfs: O(b^m)
+- greedy: O(b^m) (?)
+- a*: exponencial (?)
+
+Complexidade espacial (nr max nós em memória):
+- bfs: O(b^d)
+- dfs: O(b*m), espaço linear, só um caminho; Nós deixam de ser guardados em memória quando todos os seus sucessores são gerados
+- greedy: O(b^m)
+- a*: exponencial (?), O(b*d) (?)
+
+Otimalidade (solução menor custo?):
+m=d
+- bfs: sim, custo é 1 por ação
+- dfs: não (?)/ sim(?) neste caso em particular, como não há repetição de estados, só se preenche uma "casa" de cada vez/uma vez cada casa, e se tem que preencher obrigatoriamente todas as casas
+- greedy: não (?) / sim (?) neste caso em particular, como não há repetição de estados, só se preenche uma "casa" de cada vez, e se tem que preencher obrigatoriamente todas as casas
+- a*: sim, h(n) = 1 <= h*(n) = 1 logo heuristica e admissivel e procura e otima e equivale a greedy
+
+- b: fator ramificação = 2
+- d: profundidade solução menor custo = nr None/'2'
+- m: max profundidade do espaço de estados = nr None/'2'
