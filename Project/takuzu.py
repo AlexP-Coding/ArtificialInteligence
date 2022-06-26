@@ -7,7 +7,7 @@
 # 91110 Inara Parbato 
 # 97375 Alexandra Pato
 
-# python3 takuzu3.py < testes-takuzu/input_T01
+# python3 takuzu.py < testes-takuzu/input_T01
 # ./testing.sh 01
 
 from copy import deepcopy
