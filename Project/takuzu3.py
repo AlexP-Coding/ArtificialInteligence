@@ -49,8 +49,6 @@ class Board:
         self.cols = [[]] * size
         self.size = size
         self.maxNrsPerLine = self.size//2 + self.size%2
-        self.nrTotal = self.size**2
-        self.nrFound = self.nrTotal
         self.nrMissing = 0
         self.rowStatus = {
             "Zeroes": [0] * self.size,
@@ -69,8 +67,6 @@ class Board:
             board.rows[i] = b.rows[i].copy()
             board.cols[i] = b.cols[i].copy()
 
-        board.nrTotal = b.nrTotal
-        board.nrFound = b.nrFound
         board.nrMissing = b.nrMissing
         board.rowStatus["Zeroes"] = b.rowStatus["Zeroes"].copy()
         board.rowStatus["Ones"] = b.rowStatus["Ones"].copy()
@@ -133,7 +129,6 @@ class Board:
                     board.rowStatus["Missing"][row] += 1
                     board.colStatus["Missing"][col] += 1
                     board.nrMissing += 1
-                    board.nrFound -= 1
                 elif val == 1:
                     board.rowStatus["Ones"][row] += 1
                     board.colStatus["Ones"][col] += 1
@@ -184,8 +179,6 @@ class Board:
     def to_string_status(self):
         string = ""
         string += 'Max # per line:' + '\n' + str(self.maxNrsPerLine) + '\n'
-        string += 'Nr Total:' + '\n' + str(self.nrTotal) + '\n'
-        string += 'Nr Found:' + '\n' + str(self.nrFound) + '\n'
         string += 'Nr Missing:' + '\n' + str(self.nrMissing) + '\n'
         string += 'Rows:' + '\n' + str(self.rowStatus) + '\n'
         string += 'Cols:' + '\n' + str(self.colStatus)
@@ -196,8 +189,6 @@ class Board:
             for index2 in range(index1+1, self.size):
                 if self.rows[index1] == self.rows[index2] \
                 or self.cols[index1] == self.cols[index2]:
-           #         print("I'M A DUPLICATE BITCH!!!!!!!!!!!!!!!")
-           #         print(self.to_string_aux())
                     return True
         return False
 
@@ -227,7 +218,6 @@ class Board:
         val = action[2]
         self.rows[action[0]][action[1]] = val
         self.cols[action[1]][action[0]] = val
-        self.nrFound += 1
         self.nrMissing -= 1
         self.rowStatus["Missing"][action[0]] -= 1
         self.colStatus["Missing"][action[1]] -= 1
@@ -255,7 +245,6 @@ class Takuzu(Problem):
         """Retorna uma rows de ações que podem ser executadas a
         partir do estado passado como argumento."""
         available = []
-        filled = {}
         nrAvailable = 0
         for row in range(state.board.size):
             if state.board.rowStatus["Missing"][row] != 0:
@@ -263,7 +252,6 @@ class Takuzu(Problem):
                     for col in range(state.board.size):
                         if state.board.get_number(row, col) == None:
                             available.append((row, col, 1))
-                            filled[(row, col)] = True
                             nrAvailable +=1
                             break
                     if nrAvailable > 0:
@@ -272,7 +260,6 @@ class Takuzu(Problem):
                     for col in range(state.board.size):
                         if state.board.get_number(row, col) == None:
                             available.append((row, col, 0))
-                            filled[(row, col)] = True
                             nrAvailable +=1
                             break
                     if nrAvailable > 0:
@@ -285,7 +272,6 @@ class Takuzu(Problem):
                         for row in range(state.board.size):
                             if state.board.get_number(row, col) == None:
                                 available.append((row, col, 1))
-                                filled[(row, col)] = True
                                 nrAvailable +=1
                                 break
                         if nrAvailable > 0:
@@ -294,7 +280,6 @@ class Takuzu(Problem):
                         for row in range(state.board.size):
                             if state.board.get_number(row, col) == None:
                                 available.append((row, col, 0))
-                                filled[(row, col)] = True
                                 nrAvailable +=1
                                 break
                         if nrAvailable > 0:
@@ -313,7 +298,6 @@ class Takuzu(Problem):
                             available.append((row, col-1, 1))
                         elif middle == 1:
                             available.append((row, col-1, 0))
-                        filled[(row, col)] = True
                         nrAvailable += 1
                         break
                     elif col < state.board.size-1 and left == middle != None and right == None: # fill right
@@ -321,7 +305,6 @@ class Takuzu(Problem):
                             available.append((row, col+1, 1))
                         elif middle == 1:
                             available.append((row, col+1, 0))
-                        filled[(row, col)] = True
                         nrAvailable += 1
                         break
                     elif left == right != None and middle == None: # fill middle/current
@@ -329,7 +312,6 @@ class Takuzu(Problem):
                             available.append((row, col, 1))
                         elif left == 1:
                             available.append((row, col, 0))
-                        filled[(row, col)] = True
                         nrAvailable += 1
                         break
                     adj = state.board.adjacent_vertical_numbers(row, col)
@@ -340,7 +322,6 @@ class Takuzu(Problem):
                             available.append((row+1, col, 1))
                         elif middle == 1:
                             available.append((row+1, col, 0))
-                        filled[(row, col)] = True
                         nrAvailable += 1
                         break
                     elif row > 0 and middle == down != None and up == None: # fill up
@@ -348,7 +329,6 @@ class Takuzu(Problem):
                             available.append((row-1, col, 1))
                         elif middle == 1:
                             available.append((row-1, col, 0))
-                        filled[(row, col)] = True
                         nrAvailable += 1
                         break
                     elif up == down != None and middle == None: # fill middle/current
@@ -356,24 +336,25 @@ class Takuzu(Problem):
                             available.append((row, col, 1))
                         elif up == 1:
                             available.append((row, col, 0))
-                        filled[(row, col)] = True
                         nrAvailable += 1
                         break
                 if nrAvailable > 0:
                     break
-        true_available = list(set(available))
         if nrAvailable == 0:
             for row in range(state.board.size):
                 for col in range(state.board.size):
-                    if (row, col) not in filled and state.board.get_number(row, col) == None:
-                        true_available.append((row, col, 0))
-                        true_available.append((row, col, 1))
-                        filled[(row, col)] = True
+                    if state.board.get_number(row, col) == None:
+                        available.append((row, col, 0))
+                        available.append((row, col, 1))
+                        nrAvailable += 2
+                        break
+                if nrAvailable > 0:
+                    break
     #    print(str(state.board.to_string()))
     #    print(board.to_string_aux())
      #   print(str(state.board.to_string_status()))
       #  print("Available: " + str(true_available))
-        return true_available
+        return available
 
 #   0*	1*	0	1
 #   1	0	0*	1
